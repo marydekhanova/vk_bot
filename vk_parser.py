@@ -10,18 +10,17 @@ class VkParser():
 
     def __init__(self, version = '5.131'):
         self.vk_params = {'access_token': get_user_token(), 'v': version}
-        self.counter = 0
         self.users = []
 
-    def get_users(self, from_age, to_age, city, sex, offset):
+    def get_users(self, age_from, age_to, city, sex, offset):
         method_url = self.url + 'users.search'
         response = requests.get(url=method_url, params={**self.vk_params,
-                                                        'age_from': from_age,
-                                                        'age_to': to_age,
+                                                        'age_from': age_from,
+                                                        'age_to': age_to,
                                                         'hometown': city,
                                                         'sex': sex,
                                                         'fields': 'domain',
-                                                        'offset': offset if offset < 1000 else 0
+                                                        'offset': offset
                                                         })
         users = [{'id': item['id'], 'domain': r'https://vk.com/' + item['domain'], 'first_name': item['first_name'], 'last_name': item['last_name']} for item in response.json()['response']['items']]
         return users
@@ -32,11 +31,10 @@ class VkParser():
         responce = requests.get(url=method_url, params={**self.vk_params, 'owner_id': id, 'album_id': 'profile', 'extended': '1'})
         if 'response' in responce.json():
             photos = responce.json()['response']['items']
-            sorted(photos, key=lambda x: x['likes']['count'])
+            photos = sorted(photos, key=lambda x: x['likes']['count'], reverse=True)
             if len(photos) > 3:
                 photos = photos[0:3]
             return [photo['id'] for photo in photos]
-            #[list(sorted(photo['sizes'], key=lambda i: i['height'] * i['width'], reverse=True))[0]['url'] for photo in photos]
         else:
             return []
 

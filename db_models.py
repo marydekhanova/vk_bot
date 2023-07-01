@@ -6,12 +6,10 @@ Base = declarative_base()
 class BotUser(Base):
     __tablename__ = "bot_user"
     bot_user_id = sq.Column(sq.Integer, primary_key=True)
-    #а нам действительно нужно поле никнейм? не совсем понимаю, когда будем выводить, но посмотрим
-    nickname = sq.Column(sq.String(length=20), unique=True)
-    from_age = sq.Column(sq.Integer, nullable=False)
-    to_age = sq.Column(sq.Integer, nullable=False)
-    gender = sq.Column(sq.String, nullable=False)
-    city = sq.Column(sq.String, nullable=False)
+    from_age = sq.Column(sq.Integer)
+    to_age = sq.Column(sq.Integer)
+    gender = sq.Column(sq.Integer)
+    city = sq.Column(sq.String)
     offset = sq.Column(sq.Integer, nullable=False)
     VK_offset = sq.Column(sq.Integer, nullable=False)
 
@@ -22,7 +20,8 @@ class BufferUser(Base):
     VK_id = sq.Column(sq.Integer, nullable=False)
     name = sq.Column(sq.String(length=20))
     surname = sq.Column(sq.String(length=20))
-    link_to_profile = sq.Column(sq.String(length=40), unique=True, nullable=False)
+    link_to_profile = sq.Column(sq.String(length=40), nullable=False)
+    photo_ids = sq.Column(sq.ARRAY(sq.Integer))
     bot_user_id = sq.Column(sq.Integer, sq.ForeignKey("bot_user.bot_user_id"), nullable=False)
     bot_user = relationship(BotUser, backref="users_VK")
 
@@ -30,20 +29,19 @@ class Blacklist(Base):
     __tablename__ = "blacklist"
     blacklist_VK_id = sq.Column(sq.Integer, primary_key=True)
 
-class Favorite(Base):
+class Favourite(Base):
     __tablename__ = "favourite"
     favourite_VK_id = sq.Column(sq.Integer, primary_key=True)
     name = sq.Column(sq.String(length=20))
     surname = sq.Column(sq.String(length=20))
     link_to_profile = sq.Column(sq.String(length=40), unique=True, nullable=False)
-    bot_user_id = sq.Column(sq.Integer, sq.ForeignKey("bot_user.bot_user_id"), nullable=False)
-    bot_user = relationship(BotUser, backref="favourites")
 
 class Photo(Base):
     __tablename__ = "photo"
-    photo_id = sq.Column(sq.Integer, primary_key=True)
+    id = sq.Column(sq.Integer, primary_key=True)
+    photo_id = sq.Column(sq.Integer)
     user_VK_id = sq.Column(sq.Integer, sq.ForeignKey("favourite.favourite_VK_id"), nullable=False)
-    user_VK = relationship(Favorite, backref="photos")
+    user_VK = relationship(Favourite, backref="photos")
 
 class BlacklistUserLink(Base):
     __tablename__ = "blacklist_bot_user"
@@ -59,7 +57,7 @@ class FavouriteUserLink(Base):
     bot_user_id = sq.Column(sq.Integer, sq.ForeignKey("bot_user.bot_user_id"), nullable=False)
     bot_user = relationship(BotUser, backref="favourite_links")
     favourite_id = sq.Column(sq.Integer, sq.ForeignKey("favourite.favourite_VK_id"), nullable=False)
-    favourite = relationship(Favorite, backref="favourite_links")
+    favourite = relationship(Favourite, backref="favourite_links")
 
 def create_tables(engine):
     Base.metadata.drop_all(engine)
