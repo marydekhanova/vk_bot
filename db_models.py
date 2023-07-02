@@ -27,7 +27,10 @@ class BufferUser(Base):
 
 class Blacklist(Base):
     __tablename__ = "blacklist"
-    blacklist_VK_id = sq.Column(sq.Integer, primary_key=True)
+    id = sq.Column(sq.Integer, primary_key=True)
+    bot_user_id = sq.Column(sq.Integer, sq.ForeignKey("bot_user.bot_user_id"), nullable=False)
+    bot_user = relationship(BotUser, backref="blacklist_links")
+    blacklist_VK_id = sq.Column(sq.Integer, nullable=False)
 
 class Favourite(Base):
     __tablename__ = "favourite"
@@ -42,14 +45,6 @@ class Photo(Base):
     photo_id = sq.Column(sq.Integer)
     user_VK_id = sq.Column(sq.Integer, sq.ForeignKey("favourite.favourite_VK_id"), nullable=False)
     user_VK = relationship(Favourite, backref="photos")
-
-class BlacklistUserLink(Base):
-    __tablename__ = "blacklist_bot_user"
-    id = sq.Column(sq.Integer, primary_key=True)
-    bot_user_id = sq.Column(sq.Integer, sq.ForeignKey("bot_user.bot_user_id"), nullable=False)
-    bot_user = relationship(BotUser, backref="blacklist_links")
-    blacklist_id = sq.Column(sq.Integer, sq.ForeignKey("blacklist.blacklist_VK_id"), nullable=False)
-    blacklist = relationship(Blacklist, backref="blacklist_links")
 
 class FavouriteUserLink(Base):
     __tablename__ = "favourite_bot_user"

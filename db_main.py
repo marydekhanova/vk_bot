@@ -1,7 +1,7 @@
 import random
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
-from db_models import create_tables, BotUser, BlacklistUserLink, Blacklist, FavouriteUserLink, Favourite, Photo, BufferUser
+from db_models import create_tables, BotUser, Blacklist, FavouriteUserLink, Favourite, Photo, BufferUser
 from db_config import LOGIN, PASSWORD, DB_PORT, DB_NAME
 import vk_parser
 
@@ -84,15 +84,13 @@ def add_last_VK_user_to_blacklist(bot_user_id):
     with Session() as session:
         bot_user = session.get(BotUser, bot_user_id)
         user = session.get(BufferUser, bot_user.offset - 1)
-        if session.get(Blacklist, user.VK_id) is None:
-            session.add(Blacklist(blacklist_VK_id=user.VK_id))
-        session.add(BlacklistUserLink(bot_user_id=bot_user_id, blacklist_id=user.VK_id))
+        session.add(Blacklist(blacklist_VK_id=user.VK_id, bot_user_id=bot_user_id))
         session.commit()
 
 def get_user_blacklist(bot_user_id):
     with Session() as session:
-        query = session.query(BlacklistUserLink, Blacklist).filter(BlacklistUserLink.bot_user_id == bot_user_id).join(Blacklist, Blacklist.blacklist_VK_id == BlacklistUserLink.blacklist_id).all()
-        return [blacklist.blacklist_VK_id for _, blacklist in query]
+        query = session.query(Blacklist).filter(Blacklist.bot_user_id == bot_user_id)
+        return [blacklist.blacklist_VK_id for blacklist in query]
 
 def get_favourites(bot_user_id):
     with Session() as session:
@@ -119,7 +117,7 @@ if __name__ == '__main__':
     vk = vk_parser.VkParser()
     add_bot_user(1)
     add_bot_user(2)
-    for i in range(45):
+    for i in range(22):
         try:
             print(get_next_vk_user(1, vk.get_user_photos(get_current_vk_user_id(1))))
         except:
@@ -127,12 +125,12 @@ if __name__ == '__main__':
             delete_vk_users(1)
             add_vk_users(1, users)
             print(get_next_vk_user(1, vk.get_user_photos(get_current_vk_user_id(1))))
-        if random.randint(1, 10) <= 15:
+        if random.randint(1, 10) > 5:
             add_last_VK_user_to_favourite(1)
         else:
             add_last_VK_user_to_blacklist(1)
     print('\n')
-    for i in range(45):
+    for i in range(22):
         try:
             print(get_next_vk_user(2, vk.get_user_photos(get_current_vk_user_id(2))))
         except:
@@ -140,7 +138,7 @@ if __name__ == '__main__':
             delete_vk_users(2)
             add_vk_users(2, users)
             print(get_next_vk_user(2, vk.get_user_photos(get_current_vk_user_id(2))))
-        if random.randint(1, 10) <= 15:
+        if random.randint(1, 10) > 5:
             add_last_VK_user_to_favourite(2)
         else:
             add_last_VK_user_to_blacklist(2)
