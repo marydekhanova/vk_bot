@@ -11,28 +11,35 @@ engine = sqlalchemy.create_engine(DSN)
 
 Session = sessionmaker(bind=engine)
 
-def add_bot_user(id):
+#Создание нового пользователя бота
+def add_bot_user(bot_user_id):
     with Session() as session:
-        session.add(BotUser(bot_user_id=id, offset=1, VK_offset=0))
+        session.add(BotUser(bot_user_id=bot_user_id, offset=1, VK_offset=0))
         session.commit()
 
-def search_city_change(id, city):
+#Изменение города для поиска
+def search_city_change(bot_user_id, city):
     with Session() as session:
-        session.get(BotUser, id).city = city
+        session.get(BotUser, bot_user_id).city = city
         session.commit()
 
-def search_age_change(id, from_age, to_age):
+#Изменения возраста поиска
+def search_age_change(bot_user_id, from_age, to_age):
     with Session() as session:
-        user = session.get(BotUser, id)
+        user = session.get(BotUser, bot_user_id)
         user.from_age = from_age
         user.to_age = to_age
         session.commit()
 
-def search_gender_change(id, gender):
+#Изменение пола поиска
+def search_gender_change(bot_user_id, gender):
     with Session() as session:
-        session.get(BotUser, id).gender = gender
+        session.get(BotUser, bot_user_id).gender = gender
         session.commit()
 
+#Добавление буффера пользователей vk, которые будут выдаваться пользователю бота
+#На вход получает id пользователя бота и массив словарей пользователей vk
+#Структура словаря такая же, как возвращается в vk_parser
 def add_vk_users(bot_user_id, vk_users):
     with Session() as session:
         buffer = []
@@ -46,6 +53,9 @@ def add_vk_users(bot_user_id, vk_users):
         bot_user.VK_offset += 20 if bot_user.VK_offset <= 979 else 0
         session.commit()
 
+#Выдача пользователю бота следующего человека для рассмотрения
+#На вход - id пользователя бота и айди его 3 лучших фоток
+#Возвращает словарь пользователя в вк для рассмотрения
 def get_next_vk_user(bot_user_id, photo_ids):
     with Session() as session:
         bot_user = session.get(BotUser, bot_user_id)
@@ -55,11 +65,14 @@ def get_next_vk_user(bot_user_id, photo_ids):
         session.commit()
         return {'id': vk_user.VK_id, 'name': vk_user.name, 'surname': vk_user.surname, 'link': vk_user.link_to_profile, 'photos': vk_user.photo_ids}
 
+#Удаляет буферезированных пользователей в вк
 def delete_vk_users(bot_user_id):
     with Session() as session:
         session.query(BufferUser).filter(bot_user_id==bot_user_id).delete()
         session.commit()
 
+#Получение vk id пользователя из буфера, который будет рассматриваться следующим
+#Возвращает ошибку (которую нужно обработать), если в буфере не пользователей vk для данного пользователя бота.
 def get_current_vk_user_id(bot_user_id):
     with Session() as session:
         id = session.get(BotUser, bot_user_id).offset
@@ -68,6 +81,8 @@ def get_current_vk_user_id(bot_user_id):
             raise Exception('Too big offset')
         return vk_user.VK_id
 
+#Добавление последнего рассмотренного пользователя vk в избранное
+#На вход - id пользователя бота
 def add_last_VK_user_to_favourite(bot_user_id):
     with Session() as session:
         bot_user = session.get(BotUser, bot_user_id)
@@ -80,6 +95,8 @@ def add_last_VK_user_to_favourite(bot_user_id):
         session.add(FavouriteUserLink(bot_user_id=bot_user_id, favourite_id=user.VK_id))
         session.commit()
 
+#Добалвение последнего рассмотренного пользователя в черный список
+#На вход - id пользователя бота
 def add_last_VK_user_to_blacklist(bot_user_id):
     with Session() as session:
         bot_user = session.get(BotUser, bot_user_id)
@@ -87,11 +104,13 @@ def add_last_VK_user_to_blacklist(bot_user_id):
         session.add(Blacklist(blacklist_VK_id=user.VK_id, bot_user_id=bot_user_id))
         session.commit()
 
+#Получение черного списка (в виде массива id) для данного пользователя бота
 def get_user_blacklist(bot_user_id):
     with Session() as session:
         query = session.query(Blacklist).filter(Blacklist.bot_user_id == bot_user_id)
         return [blacklist.blacklist_VK_id for blacklist in query]
 
+#Получение списка избранных (в виде списке словарей) для данного пользователя бота.
 def get_favourites(bot_user_id):
     with Session() as session:
         query = session.query(FavouriteUserLink, Favourite). \
@@ -102,6 +121,7 @@ def get_favourites(bot_user_id):
             fav['photos'] = [photo.photo_id for photo in session.query(Photo).filter(Photo.user_VK_id == fav['id']).all()]
         return favourites
 
+#Получение параметров поиска для данного пользователя бота
 def get_bot_user_data(bot_user_id):
     with Session() as session:
         bot_user = session.get(BotUser, bot_user_id)
