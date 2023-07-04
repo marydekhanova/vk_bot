@@ -1,10 +1,9 @@
 import random
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
-from db_models import create_tables, BotUser, Blacklist, FavouriteUserLink, Favourite, Photo, BufferUser
-from db_config import LOGIN, PASSWORD, DB_PORT, DB_NAME
-import vk_parser
-
+from db.db_models import create_tables, BotUser, Blacklist, FavouriteUserLink, Favourite, Photo, BufferUser
+from db.db_config import LOGIN, PASSWORD, DB_PORT, DB_NAME
+from vk_data import vk_parser
 
 DSN = f'postgresql://{LOGIN}:{PASSWORD}@localhost:{DB_PORT}/{DB_NAME}'
 engine = sqlalchemy.create_engine(DSN)
@@ -133,7 +132,6 @@ def get_bot_user_data(bot_user_id):
                    }
 
 if __name__ == '__main__':
-    create_tables(engine)
     vk = vk_parser.VkParser()
     add_bot_user(1)
     add_bot_user(2)

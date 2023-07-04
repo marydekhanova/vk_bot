@@ -1,15 +1,13 @@
-from secret import TOKEN
+from vk_data.secret import TOKEN
 import requests
 import time
 
-def get_user_token():
-    return TOKEN #в потенциале можем допилить получение токена конкретного пользователя бота
 
 class VkParser():
     url = 'https://api.vk.com/method/'
 
-    def __init__(self, version = '5.131'):
-        self.vk_params = {'access_token': get_user_token(), 'v': version}
+    def __init__(self, token, v = '5.131'):
+        self.vk_params = {'access_token': token, 'v': v}
         self.users = []
 
     def get_users(self, age_from, age_to, city, sex, offset):
@@ -22,6 +20,7 @@ class VkParser():
                                                         'fields': 'domain',
                                                         'offset': offset
                                                         })
+        print(response.json())
         users = [{'id': item['id'], 'domain': r'https://vk.com/' + item['domain'], 'first_name': item['first_name'], 'last_name': item['last_name']} for item in response.json()['response']['items']]
         return users
 

@@ -1,4 +1,5 @@
-secret.py
+vk_data/secret.py
 __pycache__/
 .idea
-db_config.py
+db/db_config.py
+bot/.env
