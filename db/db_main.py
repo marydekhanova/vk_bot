@@ -24,7 +24,9 @@ def add_bot_user(id):
 #Изменение города для поиска
 def search_city_change(bot_user_id, city):
     with Session() as session:
-        session.get(BotUser, bot_user_id).city = city
+        user = session.get(BotUser, bot_user_id)
+        user.city = city
+        user.offset += 20 #здесь и далее - используется для того, чтобы гарантировать, что пользователи, собранные для данного пользователя по старым данным больше не выводились.
         session.commit()
 
 #Изменения возраста поиска
@@ -33,12 +35,15 @@ def search_age_change(bot_user_id, from_age, to_age):
         user = session.get(BotUser, bot_user_id)
         user.from_age = from_age
         user.to_age = to_age
+        user.offset += 20
         session.commit()
 
 #Изменение пола поиска
 def search_gender_change(bot_user_id, gender):
     with Session() as session:
-        session.get(BotUser, bot_user_id).gender = gender
+        user = session.get(BotUser, bot_user_id)
+        user.gender = gender
+        user.offset += 20
         session.commit()
 
 #Добавление буффера пользователей vk, которые будут выдаваться пользователю бота
@@ -136,41 +141,10 @@ def get_bot_user_data(bot_user_id):
                     'offset': bot_user.VK_offset
                    }
 
-if __name__ == '__main__':
-    vk = vk_parser.VkParser()
-    add_bot_user(1)
-    add_bot_user(2)
-    for i in range(22):
-        try:
-            print(get_next_vk_user(1, vk.get_user_photos(get_current_vk_user_id(1))))
-        except:
-            users = vk.get_users(**get_bot_user_data(1))
-            delete_vk_users(1)
-            add_vk_users(1, users)
-            print(get_next_vk_user(1, vk.get_user_photos(get_current_vk_user_id(1))))
-        if random.randint(1, 10) > 5:
-            add_last_VK_user_to_favourite(1)
-        else:
-            add_last_VK_user_to_blacklist(1)
-    print('\n')
-    for i in range(22):
-        try:
-            print(get_next_vk_user(2, vk.get_user_photos(get_current_vk_user_id(2))))
-        except:
-            users = vk.get_users(**get_bot_user_data(2))
-            delete_vk_users(2)
-            add_vk_users(2, users)
-            print(get_next_vk_user(2, vk.get_user_photos(get_current_vk_user_id(2))))
-        if random.randint(1, 10) > 5:
-            add_last_VK_user_to_favourite(2)
-        else:
-            add_last_VK_user_to_blacklist(2)
-    print('\n')
-    print(get_favourites(1))
-    print('\n')
-    print(get_favourites(2))
-    print('\n')
-    print(get_user_blacklist(1))
-    print('\n')
-    print(get_user_blacklist(2))
 
+def check_db_user_bot(bot_user_id):
+    with Session() as session:
+        return bool(session.get(BotUser, bot_user_id))
+
+if __name__ == '__main__':
+    create_tables(engine)

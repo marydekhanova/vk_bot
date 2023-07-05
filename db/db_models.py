@@ -18,9 +18,9 @@ class BufferUser(Base):
     __tablename__ = "buffer_user"
     user_id = sq.Column(sq.Integer, primary_key=True)
     VK_id = sq.Column(sq.Integer, nullable=False)
-    name = sq.Column(sq.String(length=20))
-    surname = sq.Column(sq.String(length=20))
-    link_to_profile = sq.Column(sq.String(length=40), nullable=False)
+    name = sq.Column(sq.String(length=40))
+    surname = sq.Column(sq.String(length=40))
+    link_to_profile = sq.Column(sq.String(length=80), nullable=False)
     photo_ids = sq.Column(sq.ARRAY(sq.Integer))
     bot_user_id = sq.Column(sq.Integer, sq.ForeignKey("bot_user.bot_user_id"), nullable=False)
     bot_user = relationship(BotUser, backref="users_VK")
@@ -35,9 +35,9 @@ class Blacklist(Base):
 class Favourite(Base):
     __tablename__ = "favourite"
     favourite_VK_id = sq.Column(sq.Integer, primary_key=True)
-    name = sq.Column(sq.String(length=20))
-    surname = sq.Column(sq.String(length=20))
-    link_to_profile = sq.Column(sq.String(length=40), unique=True, nullable=False)
+    name = sq.Column(sq.String(length=40))
+    surname = sq.Column(sq.String(length=40))
+    link_to_profile = sq.Column(sq.String(length=80), unique=True, nullable=False)
 
 class Photo(Base):
     __tablename__ = "photo"
@@ -55,5 +55,5 @@ class FavouriteUserLink(Base):
     favourite = relationship(Favourite, backref="favourite_links")
 
 def create_tables(engine):
-    # Base.metadata.drop_all(engine)
+    Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
