@@ -4,6 +4,8 @@ from sqlalchemy.orm import sessionmaker
 from db.db_models import create_tables, BotUser, Blacklist, FavouriteUserLink, Favourite, Photo, BufferUser
 from db.db_config import LOGIN, PASSWORD, DB_PORT, DB_NAME
 from vk_data import vk_parser
+from sqlalchemy.exc import IntegrityError
+
 
 DSN = f'postgresql://{LOGIN}:{PASSWORD}@localhost:{DB_PORT}/{DB_NAME}'
 engine = sqlalchemy.create_engine(DSN)
@@ -11,10 +13,13 @@ engine = sqlalchemy.create_engine(DSN)
 Session = sessionmaker(bind=engine)
 
 #Создание нового пользователя бота
-def add_bot_user(bot_user_id):
+def add_bot_user(id):
     with Session() as session:
-        session.add(BotUser(bot_user_id=bot_user_id, offset=1, VK_offset=0))
-        session.commit()
+        try:
+            session.add(BotUser(bot_user_id=id, offset=1, VK_offset=0))
+            session.commit()
+        except IntegrityError:
+            'Данный пользователь уже есть в базе данных.'
 
 #Изменение города для поиска
 def search_city_change(bot_user_id, city):

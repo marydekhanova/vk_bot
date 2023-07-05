@@ -6,6 +6,8 @@ from bot.senders import send_greeting, ask_about_city, ask_about_gender, ask_abo
     send_favorites
 from bot.data_handlers import save_city_to_db, save_gender_to_db, save_age_range_to_db, save_candidates, \
     save_favorite_candidate, save_to_blacklist
+from bot.send_functions import send_msg
+from bot.lexicon import lexicon
 
 create_tables(engine)
 for event in longpoll.listen():
@@ -22,8 +24,11 @@ for event in longpoll.listen():
                 ask_about_city(id)
 
             if 'город' in text.lower():
-                save_city_to_db(id, text)
-                ask_about_gender(id)
+                try:
+                    save_city_to_db(id, text)
+                    ask_about_gender(id)
+                except IndexError:
+                    send_msg(id, lexicon['incorrect_city'])
 
             if text == 'С парнем' or text == 'С девушкой':
                 save_gender_to_db(id, text)
