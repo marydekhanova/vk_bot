@@ -55,5 +55,4 @@ class FavouriteUserLink(Base):
     favourite = relationship(Favourite, backref="favourite_links")
 
 def create_tables(engine):
-    Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)

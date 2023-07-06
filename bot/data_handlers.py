@@ -4,6 +4,7 @@ from vk_data.config import vk_parser
 from bot.keyboard import keyboard_next
 from bot.send_functions import send_keyboard, send_msg
 from bot.lexicon import lexicon
+from bot.bot_exception import IncorrectData
 
 
 def save_city_to_db(id, text):
@@ -21,8 +22,10 @@ def save_gender_to_db(id, text):
 
 def save_age_range_to_db(id, text):
    age_range = text.split()
-   age_from = age_range[1]
-   age_to = age_range[3]
+   age_from = int(age_range[1])
+   age_to = int(age_range[3])
+   if age_from > age_to:
+       raise IncorrectData('Некорректные данные!')
    search_age_change(id, age_from, age_to)
 
 
