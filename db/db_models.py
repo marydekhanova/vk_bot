@@ -56,3 +56,7 @@ class FavouriteUserLink(Base):
 
 def create_tables(engine):
     Base.metadata.create_all(engine)
+
+
+def delete_tables(engine):
+    Base.metadata.drop_all(engine)

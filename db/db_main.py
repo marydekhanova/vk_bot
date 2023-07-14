@@ -1,9 +1,7 @@
-import random
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from db.db_models import create_tables, BotUser, Blacklist, FavouriteUserLink, Favourite, Photo, BufferUser
 from db.db_config import LOGIN, PASSWORD, DB_PORT, DB_NAME
-from vk_data import vk_parser
 from sqlalchemy.exc import IntegrityError
 
 
@@ -46,6 +44,7 @@ def search_gender_change(bot_user_id, gender):
         user.offset += 20
         session.commit()
 
+
 #Добавление буффера пользователей vk, которые будут выдаваться пользователю бота
 #На вход получает id пользователя бота и массив словарей пользователей vk
 #Структура словаря такая же, как возвращается в vk_parser
@@ -61,6 +60,7 @@ def add_vk_users(bot_user_id, vk_users):
         bot_user.offset = session.query(BufferUser).filter(BufferUser.bot_user_id == bot_user_id)[0].user_id
         bot_user.VK_offset += 20 if bot_user.VK_offset <= 979 else 0
         session.commit()
+
 
 #Выдача пользователю бота следующего человека для рассмотрения
 #На вход - id пользователя бота и айди его 3 лучших фоток
